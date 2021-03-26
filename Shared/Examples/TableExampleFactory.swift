@@ -20,8 +20,21 @@ class TableExampleFactory: ExampleFactory {
         let document = PDFDocument(format: .a4)
 
         // Create a table
-        var table = PDFTable(rows: 10, columns: 4)
+        var table = PDFTable(rows: 2, columns: 2)
+        let style = PDFTableStyleDefaults.simple
+        table.style = style
 
+        table.widths = [0.7, 0.3]
+        table.heights = [0.7, 0.3]
+
+        table.content = [
+            ["1", "2"],
+            ["3", "4"],
+        ]
+
+        document.add(table: table)
+
+        table = PDFTable(rows: 10, columns: 4)
         // Tables can contain Strings, Numbers, Images or nil, in case you need an empty cell.
         // If you add a unknown content type, an assertion will be thrown and the rendering will stop.
         table.content = [
@@ -43,10 +56,6 @@ class TableExampleFactory: ExampleFactory {
         table.widths = [
             0.1, 0.25, 0.35, 0.3
         ]
-
-        // To speed up table styling, use a default and change it
-
-        let style = PDFTableStyleDefaults.simple
 
         // Change standardized styles
         style.footerStyle = PDFTableCellStyle(

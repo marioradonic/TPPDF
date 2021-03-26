@@ -55,6 +55,12 @@ internal enum PDFTableValidator {
         for (rowIdx, row) in table.cells.enumerated() where row.count != table.widths.count {
             throw PDFError.tableStructureInvalid(message: "Data and alignment for row with index \(rowIdx) does not have the same amount!")
         }
+
+        if let heights = table.heights {
+            if heights.count != table.cells.count {
+                throw PDFError.tableStructureInvalid(message: "\(heights.count) heights are set for the table, but there are \(table.cells.count) rows")
+            }
+        }
     }
 
     /**
