@@ -64,6 +64,13 @@ internal class PDFTableObject: PDFRenderObject {
                 let columns = node.position.column...(node.position.column + node.moreColumnsSpan)
                 // Width of merged cells
                 let width = table.widths[columns].reduce(0, +) * availableSize.width
+                let height: CGFloat?
+                if let heights = table.heights {
+                    let rows = node.position.row...(node.position.row + node.moreRowsSpan)
+                    height = heights[rows].reduce(0, +) * availableSize.height
+                } else {
+                    height = nil
+                }
 
                 // Fetch type of cell
                 let type = getCellType(of: node, in: table, at: rowIdx)
@@ -76,7 +83,8 @@ internal class PDFTableObject: PDFRenderObject {
                                      style: style,
                                      type: type,
                                      origin: origin,
-                                     width: width)
+                                     width: width,
+                                     height: height)
                 calculatedCells.append(cell)
 
                 // Increase bottom offset for columns
@@ -144,7 +152,8 @@ internal class PDFTableObject: PDFRenderObject {
                             style: PDFTableCellStyle,
                             type: CellType,
                             origin: CGPoint,
-                            width: CGFloat) -> PDFTableCalculatedCell {
+                            width: CGFloat,
+                            height: CGFloat?) -> PDFTableCalculatedCell {
         var frame = PDFTableCalculatedCell(
             cell: cell,
             type: type,
@@ -154,14 +163,14 @@ internal class PDFTableObject: PDFRenderObject {
                     origin: origin + table.margin,
                     size: CGSize(
                         width: width - 2 * table.margin,
-                        height: 0
+                        height: height.flatMap { $0 - 2 * table.margin } ?? 0
                     )
                 ),
                 content: CGRect(
                     origin: origin + table.margin + table.padding,
                     size: CGSize(
                         width: width - 2 * (table.margin + table.padding),
-                        height: 0
+                        height: height.flatMap { $0 - 2 * (table.margin + table.padding) } ?? 0
                     )
                 )
             )
@@ -179,7 +188,7 @@ internal class PDFTableObject: PDFRenderObject {
                                contentWidth: frame.frames.content.width)
 
         frame.frames.content.size = result.size
-        frame.frames.cell.size.height = result.height + 2 * table.padding
+        frame.frames.cell.size.height = height ?? (result.height + 2 * table.padding)
 
         return frame
     }
@@ -443,7 +452,7 @@ internal class PDFTableObject: PDFRenderObject {
             let cellFrame = item.frames.cell
 
             // Cells needs to fit the current available space entirely
-            if cellFrame.maxY < maxOffset { // TODO: is the row padding relevant here?
+            if cellFrame.maxY <= maxOffset { // TODO: is the row padding relevant here?
                 result.cells.append(item)
             } else {
                 // If cells should be split and cell is partially on current page, add it to the cells, the cell will be sliced afterwards

@@ -33,6 +33,11 @@ public class PDFTable: PDFDocumentObject {
     public var widths: [CGFloat] = []
 
     /**
+     List of relative heights. Values are between 0.0 and 1.0 and should sum up to 1.0. If this value is not set, heights of the cells will be determined based on their content
+     */
+    public var heights: [CGFloat]?
+
+    /**
      Padding is the distance between the cell content and its borders.
      */
     public var padding: CGFloat = 0
@@ -84,6 +89,7 @@ public class PDFTable: PDFDocumentObject {
         table.style = self.style
         table.cells = self.cells
         table.widths = self.widths
+        table.heights = self.heights
         table.padding = self.padding
         table.margin = self.margin
         table.showHeadersOnEveryPage = self.showHeadersOnEveryPage
@@ -141,6 +147,9 @@ public class PDFTable: PDFDocumentObject {
             return false
         }
         guard self.widths == otherTable.widths else {
+            return false
+        }
+        guard self.heights == otherTable.heights else {
             return false
         }
         guard self.padding == otherTable.padding else {
